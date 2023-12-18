@@ -4,6 +4,26 @@ return {
     -- config variable is the default configuration table for the setup function call
     local null_ls = require "null-ls"
     local b = null_ls.builtins
+    local helpers = require "null-ls.helpers"
+    local methods = require "null-ls.methods"
+
+    local function ruff_fix()
+      return helpers.make_builtin {
+        name = "ruff",
+        meta = {
+          url = "https://github.com/charliermarsh/ruff/",
+          description = "An extremely fast Python linter, written in Rust.",
+        },
+        method = methods.internal.FORMATTING,
+        filetypes = { "python" },
+        generator_opts = {
+          command = "ruff",
+          args = { "--fix", "-e", "-n", "--stdin-filename", "$FILENAME", "-" },
+          to_stdin = true,
+        },
+        factory = helpers.formatter_factory,
+      }
+    end
 
     -- Check supported formatters and linters
     -- https://github.com/jose-elias-alvarez/null-ls.nvim/tree/main/lua/null-ls/builtins/formatting
@@ -24,8 +44,9 @@ return {
       b.diagnostics.shellcheck.with { diagnostics_format = "#{m} [#{c}]" },
 
       -- Python
-      b.diagnostics.flake8,
-      b.diagnostics.mypy
+      -- b.diagnostics.flake8,
+      ruff_fix(),
+      b.diagnostics.ruff,
     }
     return config -- return final config table
   end,
